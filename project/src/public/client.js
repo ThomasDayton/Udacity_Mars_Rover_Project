@@ -133,6 +133,7 @@ const changeSelectedRover = (selected_rover) => {
 }
 
 const getRoverPicturesHTML = (pictures, selected_rover) => {
+  console.log(pictures.toJS());
   return pictures.get(selected_rover).reduce((previousData, currentPicture) => {
     if(previousData === ``){
       return `
@@ -142,6 +143,7 @@ const getRoverPicturesHTML = (pictures, selected_rover) => {
           <p>Rover Name: ${currentPicture.get("rover").get("name")}</p><br>
           <p>Launch Date: ${currentPicture.get("rover").get("launch_date")}</p><br>
           <p>Landing Date: ${currentPicture.get("rover").get("landing_date")}</p><br>
+          <p>Photo Taken (Earth Date): ${currentPicture.get("earth_date")}</p><br>
           <p>Rover Status: ${currentPicture.get("rover").get("status")}</p>
         </div>
       </div>
@@ -154,6 +156,7 @@ const getRoverPicturesHTML = (pictures, selected_rover) => {
           <p>Rover Name: ${currentPicture.get("rover").get("name")}</p><br>
           <p>Launch Date: ${currentPicture.get("rover").get("launch_date")}</p><br>
           <p>Landing Date: ${currentPicture.get("rover").get("landing_date")}</p><br>
+          <p>Photo Taken (Earth Date): ${currentPicture.get("earth_date")}</p><br>
           <p>Rover Status: ${currentPicture.get("rover").get("status")}</p>
         </div>
       </div>
