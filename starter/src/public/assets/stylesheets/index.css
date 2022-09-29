@@ -20,19 +20,106 @@ footer {
   /* footer styles */
 }
 
+div.photo {
+  width: 80%;
+  background-color: white;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin-bottom: 25px;
+}
+  
+img {
+  width: 100%;
+}
+  
+div.container {
+  text-align: center;
+  padding: 10px 20px;
+}
+
+div.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
 /* -------------------  TABLET  --------------------- */
 @media (min-width: 768px) {
   /* use mobile */
+  div.photo {
+    width: 80%;
+    background-color: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin-bottom: 25px;
+  }
+  
+  img {
+    width: 100%;
+  }
+  
+  div.container {
+    text-align: center;
+    padding: 10px 20px;
+  }
+  
+  div.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 /* -------------------  DESKTOP  -------------------- */
 
 @media (min-width: 1224px) {
   /* use mobile */
+  div.photo {
+    width: 80%;
+    background-color: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin-bottom: 25px;
+  }
+  
+  img {
+    width: 100%;
+  }
+  
+  div.container {
+    text-align: center;
+    padding: 10px 20px;
+  }
+  
+  div.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 /* -------------------  LARGE SCREENS  -------------- */
 
 @media (min-width: 1824px) {
   /* use mobile */
+  div.photo {
+    width: 80%;
+    background-color: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin-bottom: 25px;
+  }
+  
+  img {
+    width: 100%;
+  }
+  
+  div.container {
+    text-align: center;
+    padding: 10px 20px;
+  }
+  
+  div.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }

@@ -6,7 +6,7 @@ let store = Immutable.Map({
     user: Immutable.Map({ name: "Student" }),
     apod: '',
     rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit']),
-  	rover_pictures: Immutable.List([]),
+  	rover_pictures: '',
   	selected_rover: 0,
 });
 
@@ -32,8 +32,7 @@ const App = (state) => {
         <main>
             ${Greeting(store.get("user").get("name"))}
             <section>
-                <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
+                <h3>NASA Astronomy Picture of the Day</h3>
                 <p>
                     One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
                     the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
@@ -46,7 +45,11 @@ const App = (state) => {
             </section>
             <br>
             <section>
-            <h3>Mars Rovers</h3>
+            <h3>Mars Rovers Picture Gallery</h3>
+            <div class="center">
+            	${getRoverButtons(state.get("rovers"))}
+            </div>
+            <br>
             ${MarsRovers(state, state.get("rovers"), state.get("rover_pictures"), state.get("selected_rover"))}
             </section>
         </main>
@@ -104,12 +107,68 @@ const ImageOfTheDay = (state, apod) => {
 
 // Pure Function that renders the rover pictures
 const MarsRovers = (state, rovers, pictures, selected_rover) => {
-  //If the images do not already exist, request them
-  if(R.isEmpty(pictures)){
-    const rover_pictures = rovers.map( x => getRoverPictures(state, x));
+  //If the the images do not already exist, request the images
+  if(!pictures){
+    addRoverPicturesToState(state, rovers);
   }
-  //console.log(state.get("rover_pictures").toJS());
-  
+  if(pictures) {
+    return getRoverPicturesHTML(pictures, selected_rover);
+  }
+}
+
+// Function that prints a button for each rover in the rover array, with each button having the functionality to change the selected rover to its respective rover
+const getRoverButtons = (rovers) => {
+  return rovers.reduce( (previousData, currentRover, currentIndex) => {
+    if(previousData === ``){
+      return `<button onclick="changeSelectedRover(${currentIndex})">${currentRover}</button>`;
+    } else {
+      return previousData.concat(`<button onclick="changeSelectedRover(${currentIndex})">${currentRover}</button>`);
+    }
+  }, ``);
+}
+
+// Function to change the selected rover
+const changeSelectedRover = (selected_rover) => {
+  updateStore(store, { selected_rover });
+}
+
+const getRoverPicturesHTML = (pictures, selected_rover) => {
+  return pictures.get(selected_rover).reduce((previousData, currentPicture) => {
+    if(previousData === ``){
+      return `
+      <div class="photo">
+        <img src=${currentPicture.get("img_src")} width="600" height="400">
+        <div class="container">
+          <p>Rover Name: ${currentPicture.get("rover").get("name")}</p><br>
+          <p>Launch Date: ${currentPicture.get("rover").get("launch_date")}</p><br>
+          <p>Landing Date: ${currentPicture.get("rover").get("landing_date")}</p><br>
+          <p>Rover Status: ${currentPicture.get("rover").get("status")}</p>
+        </div>
+      </div>
+      `;
+    } else {
+      return previousData.concat(`
+      <div class="photo">
+        <img src=${currentPicture.get("img_src")}>
+        <div class="container">
+          <p>Rover Name: ${currentPicture.get("rover").get("name")}</p><br>
+          <p>Launch Date: ${currentPicture.get("rover").get("launch_date")}</p><br>
+          <p>Landing Date: ${currentPicture.get("rover").get("landing_date")}</p><br>
+          <p>Rover Status: ${currentPicture.get("rover").get("status")}</p>
+        </div>
+      </div>
+      `);
+    }
+  }, ``);
+}
+
+// Asynchronous function that retrieves the rover pictures and puts them into an array in the state variable
+const addRoverPicturesToState = async (state, rovers) => {
+  const rover_pictures = await Promise.all(rovers.map(async (rover) => {
+    const rover_data = await getRoverPictures(rover);
+    return rover_data.image.latest_photos;
+  }));
+  updateStore(state, { rover_pictures });
 }
 
 // ------------------------------------------------------  API CALLS
@@ -123,8 +182,8 @@ const getImageOfTheDay = (state) => {
 }
 
 // API Call to get rover pictures
-const getRoverPictures = (state, rover) => {
-  fetch(`https://r950324c957034xreactr0lcusuk-3000.udacity-student-workspaces.com/rover/${rover}`)
-  .then(res => res.json())
-  .then(rover_pictures => updateStore(state, state.get("rover_pictures").push(rover_pictures)));
+const getRoverPictures = async (rover) => {
+  const photo_data = await fetch(`https://r950324c957034xreactr0lcusuk-3000.udacity-student-workspaces.com/rovers/${rover}`);
+  const photo_json = await photo_data.json();
+  return photo_json;
 }
