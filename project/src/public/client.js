@@ -13,12 +13,13 @@ let store = Immutable.Map({
 // add our markup to the page
 const root = document.getElementById('root')
 
-const updateStore = (state, newState) => {
+const updateStore = (newState) => {
   	// Changed to be immutable via ImmutableJs
     //store = Object.assign(store, newState)
-  	store = state.merge(newState);
+  	store = store.merge(newState);
     render(root, store);
 }
+
 const render = async (root, state) => {
     root.innerHTML = App(state);
 }
@@ -30,7 +31,7 @@ const App = (state) => {
     return `
         <header></header>
         <main>
-            ${Greeting(store.get("user").get("name"))}
+            ${Greeting(state.get("user").get("name"))}
             <section>
                 <h3>NASA Astronomy Picture of the Day</h3>
                 <p>
@@ -41,7 +42,7 @@ const App = (state) => {
                     explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
                     but generally help with discoverability of relevant imagery.
                 </p>
-                ${ImageOfTheDay(state, state.get("apod"))}
+                ${ImageOfTheDay(state.get("apod"))}
             </section>
             <br>
             <section>
@@ -50,7 +51,7 @@ const App = (state) => {
             	${getRoverButtons(state.get("rovers"))}
             </div>
             <br>
-            ${MarsRovers(state, state.get("rovers"), state.get("rover_pictures"), state.get("selected_rover"))}
+            ${MarsRovers(state.get("rovers"), state.get("rover_pictures"), state.get("selected_rover"))}
             </section>
         </main>
         <footer></footer>
@@ -78,16 +79,13 @@ const Greeting = (name) => {
 }
 
 // Example of a pure function that renders infomation requested from the backend
-const ImageOfTheDay = (state, apod) => {
+const ImageOfTheDay = (apod) => {
 
     // If image does not already exist, or it is not from today -- request it again
     const today = new Date()
     const photodate = new Date(apod && apod.get("date"))
-    console.log(photodate.getDate(), today.getDate());
-
-    console.log(photodate.getDate() === today.getDate());
     if (!apod || apod.get("date") === today.getDate() ) {
-        getImageOfTheDay(state)
+        getImageOfTheDay()
     }
 
     // check if the photo of the day is actually type video!
@@ -106,82 +104,82 @@ const ImageOfTheDay = (state, apod) => {
 }
 
 // Pure Function that renders the rover pictures
-const MarsRovers = (state, rovers, pictures, selected_rover) => {
+const MarsRovers = (rovers, pictures, selected_rover) => {
   //If the the images do not already exist, request the images
   if(!pictures){
-    addRoverPicturesToState(state, rovers);
+    addRoverPicturesToState(rovers);
   }
   if(pictures) {
     return getRoverPicturesHTML(pictures, selected_rover);
   }
 }
 
+const makeRoverButton = (roverData) => {
+  return `<button onclick="changeSelectedRover(${roverData.get("index")})">${roverData.get("rover")}</button>`
+}
+
+const highOrderHTML = (fn, params) => {
+  return fn(params);
+}
+
 // Function that prints a button for each rover in the rover array, with each button having the functionality to change the selected rover to its respective rover
 const getRoverButtons = (rovers) => {
   return rovers.reduce( (previousData, currentRover, currentIndex) => {
     if(previousData === ``){
-      return `<button onclick="changeSelectedRover(${currentIndex})">${currentRover}</button>`;
+      return highOrderHTML(makeRoverButton, Immutable.Map({index: currentIndex, rover: currentRover}));
     } else {
-      return previousData.concat(`<button onclick="changeSelectedRover(${currentIndex})">${currentRover}</button>`);
+      return previousData.concat(highOrderHTML(makeRoverButton, Immutable.Map({index: currentIndex, rover: currentRover})));
     }
   }, ``);
 }
 
 // Function to change the selected rover
 const changeSelectedRover = (selected_rover) => {
-  updateStore(store, { selected_rover });
+  updateStore({ selected_rover });
+}
+
+const makePhoto = (picture) => {
+  return `
+  	<div class="photo">
+      <img src=${picture.get("img_src")}>
+      <div class="container">
+        <p>Rover Name: ${picture.get("rover").get("name")}</p><br>
+        <p>Launch Date: ${picture.get("rover").get("launch_date")}</p><br>
+        <p>Landing Date: ${picture.get("rover").get("landing_date")}</p><br>
+        <p>Photo Taken (Earth Date): ${picture.get("earth_date")}</p><br>
+        <p>Rover Status: ${picture.get("rover").get("status")}</p>
+      </div>
+    </div>
+  `;
 }
 
 const getRoverPicturesHTML = (pictures, selected_rover) => {
-  console.log(pictures.toJS());
   return pictures.get(selected_rover).reduce((previousData, currentPicture) => {
     if(previousData === ``){
-      return `
-      <div class="photo">
-        <img src=${currentPicture.get("img_src")} width="600" height="400">
-        <div class="container">
-          <p>Rover Name: ${currentPicture.get("rover").get("name")}</p><br>
-          <p>Launch Date: ${currentPicture.get("rover").get("launch_date")}</p><br>
-          <p>Landing Date: ${currentPicture.get("rover").get("landing_date")}</p><br>
-          <p>Photo Taken (Earth Date): ${currentPicture.get("earth_date")}</p><br>
-          <p>Rover Status: ${currentPicture.get("rover").get("status")}</p>
-        </div>
-      </div>
-      `;
+      return highOrderHTML(makePhoto, currentPicture);
     } else {
-      return previousData.concat(`
-      <div class="photo">
-        <img src=${currentPicture.get("img_src")}>
-        <div class="container">
-          <p>Rover Name: ${currentPicture.get("rover").get("name")}</p><br>
-          <p>Launch Date: ${currentPicture.get("rover").get("launch_date")}</p><br>
-          <p>Landing Date: ${currentPicture.get("rover").get("landing_date")}</p><br>
-          <p>Photo Taken (Earth Date): ${currentPicture.get("earth_date")}</p><br>
-          <p>Rover Status: ${currentPicture.get("rover").get("status")}</p>
-        </div>
-      </div>
-      `);
+      return previousData.concat(highOrderHTML(makePhoto, currentPicture));
     }
   }, ``);
 }
 
 // Asynchronous function that retrieves the rover pictures and puts them into an array in the state variable
-const addRoverPicturesToState = async (state, rovers) => {
+const addRoverPicturesToState = async (rovers) => {
   const rover_pictures = await Promise.all(rovers.map(async (rover) => {
     const rover_data = await getRoverPictures(rover);
     return rover_data.image.latest_photos;
   }));
-  updateStore(state, { rover_pictures });
+  updateStore({ rover_pictures });
 }
 
 // ------------------------------------------------------  API CALLS
 
 // Example API call
-const getImageOfTheDay = (state) => {
+const getImageOfTheDay = () => {
 
     fetch(`https://r950324c957034xreactr0lcusuk-3000.udacity-student-workspaces.com/apod`)
         .then(res => res.json())
-        .then(apod => updateStore(state, { apod }));
+        .then(apod => updateStore({ apod }));
 }
 
 // API Call to get rover pictures
