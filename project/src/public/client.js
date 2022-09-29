@@ -122,20 +122,34 @@ const highOrderHTML = (fn, params) => {
   return fn(params);
 }
 
-// Function that prints a button for each rover in the rover array, with each button having the functionality to change the selected rover to its respective rover
-const getRoverButtons = (rovers) => {
-  return rovers.reduce( (previousData, currentRover, currentIndex) => {
-    if(previousData === ``){
+const roverButtonReducer = (previousData, currentRover, currentIndex) => {
+  if(previousData === ``){
       return highOrderHTML(makeRoverButton, Immutable.Map({index: currentIndex, rover: currentRover}));
     } else {
       return previousData.concat(highOrderHTML(makeRoverButton, Immutable.Map({index: currentIndex, rover: currentRover})));
     }
-  }, ``);
+}
+
+const highOrderReduce = (fn, list) => {
+  return list.reduce(fn, ``)
+}
+
+// Function that prints a button for each rover in the rover array, with each button having the functionality to change the selected rover to its respective rover
+const getRoverButtons = (rovers) => {
+  return highOrderReduce(roverButtonReducer, rovers);
 }
 
 // Function to change the selected rover
 const changeSelectedRover = (selected_rover) => {
   updateStore({ selected_rover });
+}
+
+const roverPhotoReducer = (previousData, currentPicture) => {
+  if(previousData === ``){
+      return highOrderHTML(makePhoto, currentPicture);
+    } else {
+      return previousData.concat(highOrderHTML(makePhoto, currentPicture));
+    }
 }
 
 const makePhoto = (picture) => {
@@ -154,13 +168,7 @@ const makePhoto = (picture) => {
 }
 
 const getRoverPicturesHTML = (pictures, selected_rover) => {
-  return pictures.get(selected_rover).reduce((previousData, currentPicture) => {
-    if(previousData === ``){
-      return highOrderHTML(makePhoto, currentPicture);
-    } else {
-      return previousData.concat(highOrderHTML(makePhoto, currentPicture));
-    }
-  }, ``);
+  return highOrderReduce(roverPhotoReducer, pictures.get(selected_rover));
 }
 
 // Asynchronous function that retrieves the rover pictures and puts them into an array in the state variable
