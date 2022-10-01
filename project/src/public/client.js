@@ -114,14 +114,17 @@ const MarsRovers = (rovers, pictures, selected_rover) => {
   }
 }
 
+// Function that takes the available rovers and makes a button for each of them, with each button having the functionality to switch the displayed photos to photos from its respective rover
 const makeRoverButton = (roverData) => {
   return `<button onclick="changeSelectedRover(${roverData.get("index")})">${roverData.get("rover")}</button>`
 }
 
+// Simple HOF that takes a function (in this case, an HTML-displaying function) and its parameters
 const highOrderHTML = (fn, params) => {
   return fn(params);
 }
 
+// A callback function to be passed to to the reducer that makes the rover buttons
 const roverButtonReducer = (previousData, currentRover, currentIndex) => {
   if(previousData === ``){
       return highOrderHTML(makeRoverButton, Immutable.Map({index: currentIndex, rover: currentRover}));
@@ -130,6 +133,7 @@ const roverButtonReducer = (previousData, currentRover, currentIndex) => {
     }
 }
 
+// A simple helper function that takes a list and a reducer callback function, then runs reduce using the callback on the list
 const highOrderReduce = (fn, list) => {
   return list.reduce(fn, ``)
 }
@@ -144,6 +148,7 @@ const changeSelectedRover = (selected_rover) => {
   updateStore({ selected_rover });
 }
 
+// A callback function to be passed to a reducer that returns the HTML-styled photos for the selected rover
 const roverPhotoReducer = (previousData, currentPicture) => {
   if(previousData === ``){
       return highOrderHTML(makePhoto, currentPicture);
@@ -152,21 +157,40 @@ const roverPhotoReducer = (previousData, currentPicture) => {
     }
 }
 
-const makePhoto = (picture) => {
+// A function that makes the HTML for the info for each rover photo, which is displayed beneath its respective photo
+const makePictureInfoDiv = (divClass, pictureData) => {
   return `
-  	<div class="photo">
-      <img src=${picture.get("img_src")}>
-      <div class="container">
-        <p>Rover Name: ${picture.get("rover").get("name")}</p><br>
-        <p>Launch Date: ${picture.get("rover").get("launch_date")}</p><br>
-        <p>Landing Date: ${picture.get("rover").get("landing_date")}</p><br>
-        <p>Photo Taken (Earth Date): ${picture.get("earth_date")}</p><br>
-        <p>Rover Status: ${picture.get("rover").get("status")}</p>
-      </div>
-    </div>
-  `;
+  <div class=${divClass}>
+  	<p>Rover Name: ${pictureData.get("rover").get("name")}</p><br>
+    <p>Launch Date: ${pictureData.get("rover").get("launch_date")}</p><br>
+    <p>Landing Date: ${pictureData.get("rover").get("landing_date")}</p><br>
+    <p>Photo Taken (Earth Date): ${pictureData.get("earth_date")}</p><br>
+    <p>Rover Status: ${pictureData.get("rover").get("status")}</p>
+  </div>
+  `
 }
 
+// A simple HOF that takes a div-creating function, the class that the resulting div should have, and the data needed to make the items within the div, then returns the result of the div-creating function
+const makeDiv = (divFunction, divClass, divData) => {
+  return divFunction(divClass, divData);
+}
+
+// A function that makes the HTML div that contains the photo (note that it calls the makeDiv function within it, despite being called from that function)
+const makePictureDiv = (divClass, pictureData) => {
+  return `
+  	<div class=${divClass}>
+      <img src=${pictureData.get("img_src")}>
+      ${makeDiv(makePictureInfoDiv, "container",  pictureData)}
+    </div>
+  `
+}
+
+// A simple function that creatrs the HTML for each photo given to it
+const makePhoto = (picture) => {
+  return makeDiv(makePictureDiv, "photo", picture);
+}
+
+// A function that returns the HTML for all of the photos of the rover given to it
 const getRoverPicturesHTML = (pictures, selected_rover) => {
   return highOrderReduce(roverPhotoReducer, pictures.get(selected_rover));
 }
