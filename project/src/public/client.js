@@ -209,14 +209,14 @@ const addRoverPicturesToState = async (rovers) => {
 // Example API call
 const getImageOfTheDay = () => {
 
-    fetch(`https://r950324c957034xreactr0lcusuk-3000.udacity-student-workspaces.com/apod`)
+    fetch(`/apod`)
         .then(res => res.json())
         .then(apod => updateStore({ apod }));
 }
 
 // API Call to get rover pictures
 const getRoverPictures = async (rover) => {
-  const photo_data = await fetch(`https://r950324c957034xreactr0lcusuk-3000.udacity-student-workspaces.com/rovers/${rover}`);
+  const photo_data = await fetch(`/rovers/${rover}`);
   const photo_json = await photo_data.json();
   return photo_json;
 }
